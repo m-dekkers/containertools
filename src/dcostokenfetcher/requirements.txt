@@ -1,0 +1,7 @@
+pyinstaller
+click
+requests
+datetime
+pyjwt
+staticx
+patchelf-wrapper

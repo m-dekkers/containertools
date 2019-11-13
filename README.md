@@ -10,9 +10,6 @@ The builder environments are made up of a `builder-core` container which is a ba
 ### Requirements:
 - Bash (4+ recommended, but 3 may also work)
 - Docker 
-- To test the `certificator` app:
-    - A DC/OS service user with the dcos:adminrouter:ops:ca:rw full` permissions
-    - The private key for that user, should be placed in the `resources` directory
 
 ### Usage:
 
