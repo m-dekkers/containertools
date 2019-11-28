@@ -29,14 +29,24 @@ def print_help(ctx, param, value):
 @click.option(
     '--username',
     '-u',
-    required=True,
     help='The username to fetch the JWT token for'
 )
 @click.option(
     '--userkey',
     '-k',
-    required=True,
     help='The private key to use.',
+)
+@click.option(
+    '--sasecret',
+    '-s',
+    help='Path to the sa-secret in the secret store. Use when running in a container. Either this option, or -k -c must be used'
+)
+@click.option(
+    '--time',
+    '-t',
+    required=True,
+    type=int,
+    help='Time in seconds the token should be valid for'
 )
 @click.option(
     '--output',
@@ -58,15 +68,26 @@ def print_help(ctx, param, value):
     callback=print_help,
     help="Print help message"
 )
-def dcostokenfetcher(cluster, username, userkey, output):
+def dcostokenfetcher(cluster, username, userkey, output, sasecret, time):
     """This program will fetch an authentication token from a DC/OS cluster"""
-    keyfile = open(userkey, "r")
-    private_key = keyfile.read()
+
+    # We can get the sa-secret JSON from the Mesos sandbox if defined.
+    # This is a JSON file that contains everything we need to get a JWT
+    if sasecret:
+        with open(sasecret, "r") as f:
+            secretjson = json.load(f)
+            username = secretjson['uid']
+            private_key = secretjson['private_key']
+
+    else:
+        keyfile = open(userkey, "r")
+        private_key = keyfile.read()
 
     thetoken = jwt.encode(
-        {"uid": username, "exp": datetime.datetime.utcnow() + datetime.timedelta(seconds=3600)},
+        {"uid": username, "exp": datetime.datetime.utcnow() + datetime.timedelta(seconds=time)},
         private_key, algorithm='RS256'
     )
+
     logintoken = thetoken.decode("utf-8")
 
     headers = {'Content-Type': 'application/json'}
